@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug localStorage</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        pre {
+            background: #222;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background: #c8102e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NBA Playoff Tracker - Debug</h1>
+
+    <h2>Current localStorage Data:</h2>
+    <pre id="output"></pre>
+
+    <h2>Actions:</h2>
+    <button onclick="fixMassTeam()">Fix Mass's OKC Thunder Team Name</button>
+    <button onclick="clearStorage()">Clear All Data (Reset)</button>
+    <button onclick="location.reload()">Refresh</button>
+
+    <script>
+        function showData() {
+            const data = localStorage.getItem('nbaPlayoffTracker');
+            if (data) {
+                const parsed = JSON.parse(data);
+                document.getElementById('output').textContent = JSON.stringify(parsed, null, 2);
+            } else {
+                document.getElementById('output').textContent = 'No data found';
+            }
+        }
+
+        function fixMassTeam() {
+            const data = JSON.parse(localStorage.getItem('nbaPlayoffTracker') || '{}');
+            if (data.players && data.players.Mass && data.players.Mass.teams[0]) {
+                console.log('Before:', data.players.Mass.teams[0].name);
+                data.players.Mass.teams[0].name = 'OKC Thunder';
+                localStorage.setItem('nbaPlayoffTracker', JSON.stringify(data));
+                console.log('After:', data.players.Mass.teams[0].name);
+                alert('Fixed! Mass\'s first team is now "OKC Thunder"');
+                showData();
+            }
+        }
+
+        function clearStorage() {
+            if (confirm('Are you sure? This will reset all data.')) {
+                localStorage.removeItem('nbaPlayoffTracker');
+                alert('Cleared!');
+                showData();
+            }
+        }
+
+        showData();
+    </script>
+</body>
+</html>

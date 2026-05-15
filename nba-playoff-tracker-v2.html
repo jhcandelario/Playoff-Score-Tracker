@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Playoff Tournament Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica Neue', sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 25%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 25%;
+            height: 100%;
+            background: linear-gradient(270deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Player images */
+        .player-bg-left {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 600px;
+            height: 100vh;
+            background-image: url('left.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.25;
+        }
+
+        .player-bg-left::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, transparent 40%, #000 100%);
+            z-index: 1;
+        }
+
+        .player-bg-right {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 600px;
+            height: 100vh;
+            background-image: url('right.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.25;
+        }
+
+        .player-bg-right::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(270deg, transparent 0%, transparent 40%, #000 100%);
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1650px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 50px 20px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #1d428a 0%, #c8102e 50%, #1d428a 100%);
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #fff;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 30px rgba(253, 185, 39, 0.5);
+        }
+
+        .nba-logo {
+            display: inline-block;
+            color: #1d428a;
+            background: #c8102e;
+            padding: 0 15px;
+            margin: 0 8px;
+            font-weight: 900;
+        }
+
+        .nba-logo-img {
+            height: 80px;
+            width: auto;
+            vertical-align: middle;
+            margin: 0 15px;
+            filter: drop-shadow(0 0 20px rgba(253, 185, 39, 0.3));
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        /* Leaderboard Ticker */
+        .leaderboard-section {
+            background: #1d428a;
+            border-radius: 0;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .ticker-wrapper {
+            display: flex;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .ticker-content {
+            display: flex;
+            animation: scroll-left 30s linear infinite;
+            white-space: nowrap;
+            gap: 30px;
+        }
+
+        .ticker-content:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .leaderboard-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaderboard-item.first {
+            background: linear-gradient(135deg, #fdb927 0%, #f58426 100%);
+            border-color: #fdb927;
+            box-shadow: 0 4px 12px rgba(253, 185, 39, 0.5);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.1em;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .leaderboard-item.first .leaderboard-rank,
+        .leaderboard-item.first .player-name,
+        .leaderboard-item.first .player-score {
+            color: #000;
+        }
+
+        .player-name {
+            font-size: 1em;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .player-score {
+            font-size: 1.3em;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        /* Scoring System */
+        .scoring-system {
+            background: #111;
+            padding: 25px 35px;
+            border-radius: 0;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-top: 3px solid #c8102e;
+        }
+
+        .scoring-title {
+            font-size: 1.2em;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 18px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .scoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .scoring-item {
+            background: #1a1a1a;
+            padding: 14px 18px;
+            border-radius: 4px;
+            border-left: 4px solid #1d428a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .scoring-label {
+            font-weight: 700;
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        .scoring-value {
+            font-size: 1.4em;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .scoring-item.champion {
+            background: #c8102e;
+            border-left-color: #fdb927;
+        }
+
+        .scoring-item.champion .scoring-value {
+            color: #fdb927;
+        }
+
+        /* Bracket */
+        .bracket-section {
+            background: #111;
+            border-radius: 0;
+            padding: 30px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+            margin-bottom: 30px;
+            border-top: 3px solid #1d428a;
+            border-bottom: 3px solid #1d428a;
+        }
+
+        .conference-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .conference-label {
+            font-size: 0.95em;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .bracket-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 1400px;
+            gap: 0;
+        }
+
+        .conference-bracket {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conference-bracket.west {
+            align-items: flex-end;
+        }
+
+        .conference-bracket.east {
+            align-items: flex-start;
+        }
+
+        .rounds {
+            display: flex;
+        }
+
+        .conference-bracket.west .rounds {
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+
+        .conference-bracket.east .rounds {
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 0 15px;
+            min-width: 220px;
+        }
+
+        .round-header {
+            font-size: 0.72em;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #999;
+            text-align: center;
+            margin-bottom: 15px;
+            letter-spacing: 0.8px;
+            min-height: 20px;
+        }
+
+        .matchup {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .team-row {
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
+
+        .team-row:last-child {
+            border-bottom: none;
+        }
+
+        .team-seed {
+            font-size: 0.75em;
+            color: #999;
+            font-weight: 900;
+            min-width: 15px;
+        }
+
+        .team-logo-bracket {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .team-name {
+            font-size: 0.9em;
+            font-weight: 700;
+            color: #fff;
+            flex: 1;
+        }
+
+        .team-wins {
+            font-size: 0.95em;
+            font-weight: 900;
+            color: #666;
+            min-width: 22px;
+            text-align: center;
+        }
+
+        .team-row.winner .team-wins {
+            background: #1d428a;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(29, 66, 138, 0.5);
+        }
+
+        .team-row.eliminated {
+            opacity: 0.3;
+        }
+
+        .finals-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 40px;
+            min-width: 200px;
+        }
+
+        .finals-label {
+            font-size: 0.9em;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #c8102e;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .finals-logo-container {
+            margin-bottom: 20px;
+        }
+
+        .finals-logo-container img {
+            width: 60px;
+            height: 60px;
+            filter: brightness(1.2);
+        }
+
+        .champion-box {
+            background: #1a1a1a;
+            border: 2px solid #fdb927;
+            border-radius: 4px;
+            padding: 15px 20px;
+            text-align: center;
+            min-width: 140px;
+            box-shadow: 0 0 20px rgba(253, 185, 39, 0.3);
+        }
+
+        .champion-box-label {
+            font-size: 0.7em;
+            color: #999;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .champion-name {
+            font-size: 0.9em;
+            font-weight: 700;
+            color: #fdb927;
+        }
+
+        .trophy-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .championship-trophy {
+            height: 150px;
+            width: auto;
+            filter: drop-shadow(0 5px 20px rgba(253, 185, 39, 0.5));
+            animation: trophy-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes trophy-glow {
+            0%, 100% {
+                filter: drop-shadow(0 5px 20px rgba(253, 185, 39, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 5px 30px rgba(253, 185, 39, 0.8));
+            }
+        }
+
+        /* Game Schedule Section */
+        .game-schedule-section {
+            background: #111;
+            border-radius: 0;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-top: 3px solid #1d428a;
+        }
+
+        .schedule-title {
+            font-size: 1.2em;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 1.5px;
+        }
+
+        .games-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .game-card {
+            background: #1a1a1a;
+            border-radius: 4px;
+            padding: 15px;
+            border: 1px solid #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-card.live {
+            border-color: #c8102e;
+            box-shadow: 0 0 15px rgba(200, 16, 46, 0.3);
+        }
+
+        .game-status {
+            font-size: 0.7em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .game-status.scheduled {
+            color: #999;
+        }
+
+        .game-status.live {
+            color: #c8102e;
+            animation: pulse 2s infinite;
+        }
+
+        .game-status.final {
+            color: #fdb927;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .game-teams {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .game-team {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: #222;
+            border-radius: 3px;
+        }
+
+        .game-team.winner {
+            border-left: 3px solid #fdb927;
+        }
+
+        .game-team-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .game-team-name {
+            flex: 1;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .game-team-score {
+            font-size: 1.2em;
+            font-weight: 900;
+            color: #fdb927;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .game-time {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        /* Player Details */
+        .team-details-panel {
+            background: #111;
+            border-radius: 0;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-top: 3px solid #c8102e;
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 1.5px;
+        }
+
+        .player-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 15px;
+        }
+
+        .player-card-detail {
+            background: #1a1a1a;
+            border-radius: 4px;
+            padding: 15px;
+            border: 1px solid #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-header-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1d428a;
+        }
+
+        .player-name-detail {
+            font-size: 1.2em;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .player-total-score {
+            font-size: 1.6em;
+            font-weight: 900;
+            color: #fdb927;
+        }
+
+        .teams-wrapper {
+            display: grid;
+            gap: 10px;
+        }
+
+        .single-team {
+            background: #222;
+            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+
+        .team-header-row {
+            margin-bottom: 8px;
+        }
+
+        .team-name-display-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            border: 1px solid #444;
+        }
+
+        .team-logo-small {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .team-name-input {
+            flex: 1;
+            padding: 0;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        .team-name-input:focus {
+            outline: none;
+        }
+
+        .wins-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .win-box {
+            background: #2a2a2a;
+            padding: 6px 4px;
+            border-radius: 3px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
+        .win-box-label {
+            font-size: 0.6em;
+            color: #999;
+            margin-bottom: 3px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .win-box input {
+            width: 100%;
+            padding: 3px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 3px;
+            text-align: center;
+            color: #fdb927;
+            font-size: 1em;
+            font-weight: 900;
+        }
+
+        .win-box input:focus {
+            outline: none;
+            border-color: #fdb927;
+        }
+
+        .champion-row {
+            margin-top: 6px;
+            padding: 6px;
+            background: rgba(200, 16, 46, 0.2);
+            border-radius: 3px;
+            text-align: center;
+            border: 1px solid #c8102e;
+        }
+
+        .champion-row label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7em;
+            color: #fdb927;
+        }
+
+        .champion-row input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .player-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wins-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Player Background Images -->
+    <div class="player-bg-left"></div>
+    <div class="player-bg-right"></div>
+
+    <div class="container">
+        <header>
+            <h1>🏀 <img src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="NBA" class="nba-logo-img"> PLAYOFFS 🏆</h1>
+            <p class="subtitle">2026 Championship Pool</p>
+        </header>
+
+        <div class="leaderboard-section">
+            <div class="ticker-wrapper">
+                <div class="ticker-content" id="leaderboard"></div>
+            </div>
+        </div>
+
+        <div class="scoring-system">
+            <div class="scoring-title">🏀 Point System 🏀</div>
+            <div class="scoring-grid">
+                <div class="scoring-item">
+                    <span class="scoring-label">Round 1 Win</span>
+                    <span class="scoring-value">1 pt</span>
+                </div>
+                <div class="scoring-item">
+                    <span class="scoring-label">Round 2 Win</span>
+                    <span class="scoring-value">2 pts</span>
+                </div>
+                <div class="scoring-item">
+                    <span class="scoring-label">Conf Finals Win</span>
+                    <span class="scoring-value">3 pts</span>
+                </div>
+                <div class="scoring-item">
+                    <span class="scoring-label">Finals Win</span>
+                    <span class="scoring-value">4 pts</span>
+                </div>
+                <div class="scoring-item champion">
+                    <span class="scoring-label">🏆 Championship</span>
+                    <span class="scoring-value">+5 pts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Schedule Section -->
+        <div class="game-schedule-section" id="game-schedule">
+            <div class="schedule-title">Upcoming Games</div>
+            <div class="games-container" id="games-container">
+                <div style="color: #999; text-align: center; padding: 20px;">Loading games...</div>
+            </div>
+        </div>
+
+        <div class="bracket-section">
+            <div class="bracket-container">
+                <!-- WEST -->
+                <div class="conference-bracket west">
+                    <div class="conference-header">
+                        <div class="conference-label">WEST</div>
+                    </div>
+                    <div class="rounds">
+                        <!-- Round 1 West -->
+                        <div class="round">
+                            <div class="round-header">First Round</div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">1</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Thunder</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">8</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612756/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Suns</span>
+                                    <span class="team-wins">0</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">4</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Lakers</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">5</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612745/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Rockets</span>
+                                    <span class="team-wins">2</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">6</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Timberwolves</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">3</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Nuggets</span>
+                                    <span class="team-wins">2</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">2</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Spurs</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">7</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612757/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Trail Blazers</span>
+                                    <span class="team-wins">1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Round 2 West -->
+                        <div class="round">
+                            <div class="round-header">Conf. Semifinals</div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">1</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Thunder</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">4</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Lakers</span>
+                                    <span class="team-wins">0</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row">
+                                    <span class="team-seed">6</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Timberwolves</span>
+                                    <span class="team-wins">2</span>
+                                </div>
+                                <div class="team-row">
+                                    <span class="team-seed">2</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Spurs</span>
+                                    <span class="team-wins">3</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conf Finals West -->
+                        <div class="round">
+                            <div class="round-header">Conf. Finals</div>
+                            <div class="matchup">
+                                <div class="team-row">
+                                    <span class="team-seed">1</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Thunder</span>
+                                    <span class="team-wins">-</span>
+                                </div>
+                                <div class="team-row">
+                                    <span class="team-seed"></span>
+                                    <span class="team-name">TBD</span>
+                                    <span class="team-wins">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINALS -->
+                <div class="finals-section">
+                    <div class="round-header">NBA Finals</div>
+                    <div class="finals-label">NBA<br>FINALS</div>
+                    <div class="finals-logo-container">
+                        <img src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="NBA">
+                    </div>
+                    <div class="champion-box">
+                        <div class="champion-box-label">CHAMPION</div>
+                        <div class="champion-name" id="champion-display">TBD</div>
+                    </div>
+                    <div class="trophy-container">
+                        <img src="clipart1347570.png" alt="Larry O'Brien Trophy" class="championship-trophy">
+                    </div>
+                </div>
+
+                <!-- EAST -->
+                <div class="conference-bracket east">
+                    <div class="conference-header">
+                        <div class="conference-label">EAST</div>
+                    </div>
+                    <div class="rounds">
+                        <!-- Round 1 East -->
+                        <div class="round">
+                            <div class="round-header">First Round</div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">1</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Pistons</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">8</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Magic</span>
+                                    <span class="team-wins">3</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">4</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Cavaliers</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">5</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Raptors</span>
+                                    <span class="team-wins">3</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">3</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Knicks</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">6</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612737/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Hawks</span>
+                                    <span class="team-wins">2</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">7</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">76ers</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">2</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Celtics</span>
+                                    <span class="team-wins">3</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Round 2 East -->
+                        <div class="round">
+                            <div class="round-header">Conf. Semifinals</div>
+                            <div class="matchup">
+                                <div class="team-row">
+                                    <span class="team-seed">4</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Cavaliers</span>
+                                    <span class="team-wins">3</span>
+                                </div>
+                                <div class="team-row">
+                                    <span class="team-seed">1</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Pistons</span>
+                                    <span class="team-wins">2</span>
+                                </div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team-row winner">
+                                    <span class="team-seed">3</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Knicks</span>
+                                    <span class="team-wins">4</span>
+                                </div>
+                                <div class="team-row eliminated">
+                                    <span class="team-seed">7</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">76ers</span>
+                                    <span class="team-wins">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conf Finals East -->
+                        <div class="round">
+                            <div class="round-header">Conf. Finals</div>
+                            <div class="matchup">
+                                <div class="team-row">
+                                    <span class="team-seed">3</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Knicks</span>
+                                    <span class="team-wins">-</span>
+                                </div>
+                                <div class="team-row">
+                                    <span class="team-seed"></span>
+                                    <span class="team-name">TBD</span>
+                                    <span class="team-wins">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-details-panel">
+            <div class="panel-title">Player Teams & Scoring</div>
+            <div class="player-cards-grid" id="team-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const players = ['Mass', 'Ian', 'Ugo', 'Ben', 'Jonathan', 'Aleks', 'Sydney'];
+
+        const teamLogos = {
+            'Thunder': 'https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg',
+            'OKC Thunder': 'https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg',
+            'Oklahoma City Thunder': 'https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg',
+            'Lakers': 'https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg',
+            'LA Lakers': 'https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg',
+            'Celtics': 'https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg',
+            'Boston Celtics': 'https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg',
+            'Knicks': 'https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg',
+            'New York Knicks': 'https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg',
+            '76ers': 'https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg',
+            'Philadelphia 76ers': 'https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg',
+            'Raptors': 'https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg',
+            'Toronto Raptors': 'https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg',
+            'Cavaliers': 'https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg',
+            'Cleveland Cavaliers': 'https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg',
+            'Pistons': 'https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg',
+            'Detroit Pistons': 'https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg',
+            'Hawks': 'https://cdn.nba.com/logos/nba/1610612737/primary/L/logo.svg',
+            'Atlanta Hawks': 'https://cdn.nba.com/logos/nba/1610612737/primary/L/logo.svg',
+            'Magic': 'https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg',
+            'Orlando Magic': 'https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg',
+            'Nuggets': 'https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg',
+            'Denver Nuggets': 'https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg',
+            'Timberwolves': 'https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg',
+            'Minnesota Timberwolves': 'https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg',
+            'Trail Blazers': 'https://cdn.nba.com/logos/nba/1610612757/primary/L/logo.svg',
+            'Portland Trail Blazers': 'https://cdn.nba.com/logos/nba/1610612757/primary/L/logo.svg',
+            'Suns': 'https://cdn.nba.com/logos/nba/1610612756/primary/L/logo.svg',
+            'Phoenix Suns': 'https://cdn.nba.com/logos/nba/1610612756/primary/L/logo.svg',
+            'Rockets': 'https://cdn.nba.com/logos/nba/1610612745/primary/L/logo.svg',
+            'Houston Rockets': 'https://cdn.nba.com/logos/nba/1610612745/primary/L/logo.svg',
+            'Spurs': 'https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg',
+            'San Antonio Spurs': 'https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg',
+        };
+
+        function getTeamLogo(teamName) {
+            return teamLogos[teamName] || '';
+        }
+
+        let data = JSON.parse(localStorage.getItem('nbaPlayoffTracker') || '{}');
+
+        if (!data.players) {
+            data.players = {
+                'Mass': {
+                    teams: [
+                        { name: 'OKC Thunder', round1: 4, round2: 4, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Philadelphia 76ers', round1: 4, round2: 0, confFinals: 0, finals: 0, champion: false }
+                    ]
+                },
+                'Ian': {
+                    teams: [
+                        { name: 'San Antonio Spurs', round1: 4, round2: 3, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Atlanta Hawks', round1: 2, round2: 0, confFinals: 0, finals: 0, champion: false }
+                    ]
+                },
+                'Ugo': {
+                    teams: [
+                        { name: 'Boston Celtics', round1: 3, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Toronto Raptors', round1: 3, round2: 0, confFinals: 0, finals: 0, champion: false }
+                    ]
+                },
+                'Ben': {
+                    teams: [
+                        { name: 'Denver Nuggets', round1: 2, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Houston Rockets', round1: 2, round2: 0, confFinals: 0, finals: 0, champion: false }
+                    ]
+                },
+                'Jonathan': {
+                    teams: [
+                        { name: 'New York Knicks', round1: 4, round2: 4, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Orlando Magic', round1: 3, round2: 0, confFinals: 0, finals: 0, champion: false }
+                    ]
+                },
+                'Aleks': {
+                    teams: [
+                        { name: 'Cleveland Cavaliers', round1: 4, round2: 3, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Minnesota Timberwolves', round1: 4, round2: 2, confFinals: 0, finals: 0, champion: false }
+                    ]
+                },
+                'Sydney': {
+                    teams: [
+                        { name: 'LA Lakers', round1: 4, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Detroit Pistons', round1: 4, round2: 2, confFinals: 0, finals: 0, champion: false }
+                    ]
+                }
+            };
+        }
+
+        function saveData() {
+            localStorage.setItem('nbaPlayoffTracker', JSON.stringify(data));
+            render();
+        }
+
+        function calculateScore(player) {
+            let total = 0;
+            data.players[player].teams.forEach(team => {
+                total += team.round1 * 1;
+                total += team.round2 * 2;
+                total += team.confFinals * 3;
+                total += team.finals * 4;
+                if (team.champion) {
+                    total += 5;
+                }
+            });
+            return total;
+        }
+
+        function render() {
+            const leaderboard = document.getElementById('leaderboard');
+            const teamDetails = document.getElementById('team-details');
+
+            const playerScores = players.map(player => ({
+                name: player,
+                score: calculateScore(player)
+            })).sort((a, b) => b.score - a.score);
+
+            const leaderboardHTML = playerScores.map(({ name, score }, index) => `
+                <div class="leaderboard-item ${index === 0 && score > 0 ? 'first' : ''}">
+                    <span class="leaderboard-rank">#${index + 1}</span>
+                    <span class="player-name">${name}</span>
+                    <span class="player-score">${score} pts</span>
+                </div>
+            `).join('');
+
+            leaderboard.innerHTML = leaderboardHTML + leaderboardHTML;
+
+            teamDetails.innerHTML = players.map(player => {
+                const playerData = data.players[player];
+                const playerScore = calculateScore(player);
+
+                return `
+                    <div class="player-card-detail">
+                        <div class="player-header-detail">
+                            <div class="player-name-detail">${player}</div>
+                            <div class="player-total-score">${playerScore} pts</div>
+                        </div>
+                        <div class="teams-wrapper">
+                            ${playerData.teams.map((team, idx) => {
+                                const logoUrl = getTeamLogo(team.name);
+                                return `
+                                <div class="single-team" style="background-image: url('${logoUrl}'); background-size: 120px; background-repeat: no-repeat; background-position: right 10px center; background-blend-mode: overlay; opacity: 0.95;">
+                                    <div class="team-header-row">
+                                        <div class="team-name-display-wrapper">
+                                            ${logoUrl ? `<img src="${logoUrl}" alt="${team.name}" class="team-logo-small">` : ''}
+                                            <input
+                                                type="text"
+                                                class="team-name-input"
+                                                value="${team.name}"
+                                                placeholder="Team ${idx + 1}"
+                                                onchange="data.players['${player}'].teams[${idx}].name = this.value; saveData();"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="wins-row">
+                                        <div class="win-box">
+                                            <div class="win-box-label">R1</div>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="4"
+                                                value="${team.round1}"
+                                                onchange="data.players['${player}'].teams[${idx}].round1 = parseInt(this.value) || 0; saveData();"
+                                            />
+                                        </div>
+                                        <div class="win-box">
+                                            <div class="win-box-label">R2</div>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="4"
+                                                value="${team.round2}"
+                                                onchange="data.players['${player}'].teams[${idx}].round2 = parseInt(this.value) || 0; saveData();"
+                                            />
+                                        </div>
+                                        <div class="win-box">
+                                            <div class="win-box-label">CF</div>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="4"
+                                                value="${team.confFinals}"
+                                                onchange="data.players['${player}'].teams[${idx}].confFinals = parseInt(this.value) || 0; saveData();"
+                                            />
+                                        </div>
+                                        <div class="win-box">
+                                            <div class="win-box-label">Finals</div>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="4"
+                                                value="${team.finals}"
+                                                onchange="data.players['${player}'].teams[${idx}].finals = parseInt(this.value) || 0; saveData();"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="champion-row">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                ${team.champion ? 'checked' : ''}
+                                                onchange="data.players['${player}'].teams[${idx}].champion = this.checked; saveData();"
+                                            />
+                                            🏆 NBA Champion (+5 pts)
+                                        </label>
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const champions = [];
+            players.forEach(player => {
+                data.players[player].teams.forEach(team => {
+                    if (team.champion) {
+                        champions.push(team.name);
+                    }
+                });
+            });
+            document.getElementById('champion-display').textContent =
+                champions.length > 0 ? champions[0] : 'TBD';
+        }
+
+        // Team name mapping for API
+        const apiTeamMapping = {
+            'Thunder': 'OKC Thunder',
+            'Lakers': 'LA Lakers',
+            'Celtics': 'Boston Celtics',
+            'Knicks': 'New York Knicks',
+            '76ers': 'Philadelphia 76ers',
+            'Sixers': 'Philadelphia 76ers',
+            'Raptors': 'Toronto Raptors',
+            'Cavaliers': 'Cleveland Cavaliers',
+            'Cavs': 'Cleveland Cavaliers',
+            'Pistons': 'Detroit Pistons',
+            'Hawks': 'Atlanta Hawks',
+            'Magic': 'Orlando Magic',
+            'Nuggets': 'Denver Nuggets',
+            'Timberwolves': 'Minnesota Timberwolves',
+            'Wolves': 'Minnesota Timberwolves',
+            'Trail Blazers': 'Portland Trail Blazers',
+            'Blazers': 'Portland Trail Blazers',
+            'Suns': 'Phoenix Suns',
+            'Rockets': 'Houston Rockets',
+            'Spurs': 'San Antonio Spurs'
+        };
+
+        // ESPN API Integration - Fetch live playoff data
+        async function fetchESPNPlayoffData() {
+            try {
+                // ESPN's scoreboard API for NBA playoffs (2026 season)
+                const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard');
+
+                if (!response.ok) {
+                    throw new Error(`ESPN API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('ESPN playoff data:', data);
+
+                return data;
+            } catch (error) {
+                console.error('Error fetching ESPN data:', error);
+                return null;
+            }
+        }
+
+        // Auto-update scores from ESPN API on page load
+        async function autoUpdateFromESPN() {
+            try {
+                const espnData = await fetchESPNPlayoffData();
+
+                if (espnData && espnData.events) {
+                    console.log('✅ ESPN data loaded successfully');
+                    console.log(`Found ${espnData.events.length} games`);
+
+                    // Display all games (playoff, regular season, whatever's available)
+                    displayGames(espnData.events);
+
+                    // Filter for playoff games only for scoring
+                    const playoffGames = espnData.events.filter(event => {
+                        return event.season?.type === 3; // Type 3 = Playoffs
+                    });
+
+                    if (playoffGames.length > 0) {
+                        console.log(`🏀 ${playoffGames.length} playoff games found`);
+                        updateScoresFromGames(playoffGames);
+                    }
+                }
+            } catch (error) {
+                console.error('Auto-update error:', error);
+                document.getElementById('games-container').innerHTML = '<div style="color: #c8102e; text-align: center; padding: 20px;">Error loading games</div>';
+            }
+        }
+
+        // Display games in the schedule section
+        function displayGames(games) {
+            const container = document.getElementById('games-container');
+
+            if (!games || games.length === 0) {
+                container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No games scheduled</div>';
+                return;
+            }
+
+            // Show upcoming and live games
+            const relevantGames = games.filter(game => {
+                const state = game.competitions?.[0]?.status?.type?.state;
+                return state === 'pre' || state === 'in'; // Scheduled or in progress
+            }).slice(0, 6); // Show max 6 games
+
+            if (relevantGames.length === 0) {
+                // Show recent completed games if no upcoming
+                const completedGames = games.filter(game => {
+                    return game.competitions?.[0]?.status?.type?.state === 'post';
+                }).slice(0, 6);
+                renderGameCards(completedGames, container);
+            } else {
+                renderGameCards(relevantGames, container);
+            }
+        }
+
+        // Render game cards
+        function renderGameCards(games, container) {
+            if (games.length === 0) {
+                container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No games available</div>';
+                return;
+            }
+
+            const gamesHTML = games.map(game => {
+                const competition = game.competitions?.[0];
+                const status = competition?.status;
+                const state = status?.type?.state;
+                const competitors = competition?.competitors || [];
+
+                if (competitors.length !== 2) return '';
+
+                const homeTeam = competitors.find(c => c.homeAway === 'home') || competitors[0];
+                const awayTeam = competitors.find(c => c.homeAway === 'away') || competitors[1];
+
+                const homeScore = homeTeam.score || '0';
+                const awayScore = awayTeam.score || '0';
+                const homeWinner = state === 'post' && parseFloat(homeScore) > parseFloat(awayScore);
+                const awayWinner = state === 'post' && parseFloat(awayScore) > parseFloat(homeScore);
+
+                const statusText = state === 'pre' ? 'SCHEDULED' : state === 'in' ? 'LIVE' : 'FINAL';
+                const statusClass = state === 'pre' ? 'scheduled' : state === 'in' ? 'live' : 'final';
+                const cardClass = state === 'in' ? 'live' : '';
+
+                const gameTime = state === 'pre' ? status?.type?.detail || 'TBD' : status?.type?.detail || '';
+
+                return `
+                    <div class="game-card ${cardClass}">
+                        <div class="game-status ${statusClass}">${statusText}</div>
+                        <div class="game-teams">
+                            <div class="game-team ${awayWinner ? 'winner' : ''}">
+                                <img src="${awayTeam.team?.logo || ''}" class="game-team-logo" onerror="this.style.display='none'">
+                                <span class="game-team-name">${awayTeam.team?.displayName || awayTeam.team?.name || 'TBD'}</span>
+                                <span class="game-team-score">${state !== 'pre' ? awayScore : ''}</span>
+                            </div>
+                            <div class="game-team ${homeWinner ? 'winner' : ''}">
+                                <img src="${homeTeam.team?.logo || ''}" class="game-team-logo" onerror="this.style.display='none'">
+                                <span class="game-team-name">${homeTeam.team?.displayName || homeTeam.team?.name || 'TBD'}</span>
+                                <span class="game-team-score">${state !== 'pre' ? homeScore : ''}</span>
+                            </div>
+                        </div>
+                        <div class="game-time">${gameTime}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = gamesHTML;
+        }
+
+        // Update scores based on ESPN game data
+        function updateScoresFromGames(games) {
+            const teamWins = {};
+
+            games.forEach(game => {
+                const competition = game.competitions?.[0];
+                if (!competition || competition.status?.type?.state !== 'post') {
+                    return; // Skip in-progress or scheduled games
+                }
+
+                const competitors = competition.competitors;
+                if (!competitors || competitors.length !== 2) return;
+
+                const team1 = competitors[0];
+                const team2 = competitors[1];
+
+                // Determine winner
+                const winner = parseFloat(team1.score) > parseFloat(team2.score) ? team1 : team2;
+                const winnerName = winner.team.displayName;
+
+                // Track wins
+                if (!teamWins[winnerName]) {
+                    teamWins[winnerName] = 0;
+                }
+                teamWins[winnerName]++;
+            });
+
+            console.log('Team wins from ESPN:', teamWins);
+
+            // Note: This is a simplified version - ESPN's API returns current scoreboard
+            // For full playoff bracket tracking, you'd need to track series over time
+        }
+
+        // Initialize auto-update on page load
+        window.addEventListener('load', () => {
+            console.log('🏀 NBA Playoff Tracker loaded - checking ESPN API...');
+            autoUpdateFromESPN();
+
+            // Refresh every 5 minutes
+            setInterval(autoUpdateFromESPN, 5 * 60 * 1000);
+        });
+
+        render();
+    </script>
+</body>
+</html>
