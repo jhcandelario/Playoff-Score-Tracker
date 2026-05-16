@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+/<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -540,6 +540,52 @@
             margin-bottom: 15px;
             text-align: center;
             letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .auto-update-badge {
+            font-size: 0.6em;
+            padding: 4px 10px;
+            background: #1d428a;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            animation: badge-pulse 2s infinite;
+        }
+
+        @keyframes badge-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .last-update {
+            font-size: 0.6em;
+            color: #999;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .recalculate-btn {
+            padding: 8px 16px;
+            background: #c8102e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.8em;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .recalculate-btn:hover {
+            background: #fdb927;
+            color: #000;
+            transform: scale(1.05);
         }
 
         .games-container {
@@ -859,13 +905,20 @@
 
         <!-- Game Schedule Section -->
         <div class="game-schedule-section" id="game-schedule">
-            <div class="schedule-title">Upcoming Games</div>
+            <div class="schedule-title">
+                <span>Live Games & Scores</span>
+                <span class="auto-update-badge">AUTO-UPDATE</span>
+                <span class="last-update" id="last-update"></span>
+            </div>
             <div class="games-container" id="games-container">
                 <div style="color: #999; text-align: center; padding: 20px;">Loading games...</div>
             </div>
         </div>
 
         <div class="bracket-section">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <span id="bracket-update-status" style="color: #fdb927; font-size: 0.8em; font-weight: 700;"></span>
+            </div>
             <div class="bracket-container">
                 <!-- WEST -->
                 <div class="conference-bracket west">
@@ -1126,7 +1179,11 @@
         </div>
 
         <div class="team-details-panel">
-            <div class="panel-title">Player Teams & Scoring</div>
+            <div class="panel-title">
+                Player Teams & Scoring
+                <span class="auto-update-badge" style="margin-left: 15px; font-size: 0.5em;">AUTO-SYNC</span>
+                <button class="recalculate-btn" onclick="syncPlayerScoresWithBracket()" style="margin-left: 15px; font-size: 0.55em;">🔄 Sync with Bracket</button>
+            </div>
             <div class="player-cards-grid" id="team-details"></div>
         </div>
     </div>
@@ -1176,56 +1233,148 @@
 
         let data = JSON.parse(localStorage.getItem('nbaPlayoffTracker') || '{}');
 
+        // Initialize player data if it doesn't exist
         if (!data.players) {
+            console.log('🆕 Initializing player data...');
             data.players = {
                 'Mass': {
                     teams: [
-                        { name: 'OKC Thunder', round1: 4, round2: 4, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Philadelphia 76ers', round1: 4, round2: 0, confFinals: 0, finals: 0, champion: false }
+                        { name: 'OKC Thunder', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Philadelphia 76ers', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 },
                 'Ian': {
                     teams: [
-                        { name: 'San Antonio Spurs', round1: 4, round2: 3, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Atlanta Hawks', round1: 2, round2: 0, confFinals: 0, finals: 0, champion: false }
+                        { name: 'San Antonio Spurs', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Atlanta Hawks', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 },
                 'Ugo': {
                     teams: [
-                        { name: 'Boston Celtics', round1: 3, round2: 0, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Toronto Raptors', round1: 3, round2: 0, confFinals: 0, finals: 0, champion: false }
+                        { name: 'Boston Celtics', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Toronto Raptors', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 },
                 'Ben': {
                     teams: [
-                        { name: 'Denver Nuggets', round1: 2, round2: 0, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Houston Rockets', round1: 2, round2: 0, confFinals: 0, finals: 0, champion: false }
+                        { name: 'Denver Nuggets', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Houston Rockets', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 },
                 'Jonathan': {
                     teams: [
-                        { name: 'New York Knicks', round1: 4, round2: 4, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Orlando Magic', round1: 3, round2: 0, confFinals: 0, finals: 0, champion: false }
+                        { name: 'New York Knicks', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Orlando Magic', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 },
                 'Aleks': {
                     teams: [
-                        { name: 'Cleveland Cavaliers', round1: 4, round2: 3, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Minnesota Timberwolves', round1: 4, round2: 2, confFinals: 0, finals: 0, champion: false }
+                        { name: 'Cleveland Cavaliers', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Minnesota Timberwolves', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 },
                 'Sydney': {
                     teams: [
-                        { name: 'LA Lakers', round1: 4, round2: 0, confFinals: 0, finals: 0, champion: false },
-                        { name: 'Detroit Pistons', round1: 4, round2: 2, confFinals: 0, finals: 0, champion: false }
+                        { name: 'LA Lakers', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false },
+                        { name: 'Detroit Pistons', round1: 0, round2: 0, confFinals: 0, finals: 0, champion: false }
                     ]
                 }
             };
+            localStorage.setItem('nbaPlayoffTracker', JSON.stringify(data));
+            console.log('✅ Player data initialized - will auto-update from ESPN feed');
         }
 
         function saveData() {
             localStorage.setItem('nbaPlayoffTracker', JSON.stringify(data));
             render();
+        }
+
+        // Sync player scores with what's displayed in the bracket HTML
+        function syncPlayerScoresWithBracket() {
+            console.log('🔄 Syncing player scores with bracket display...');
+
+            // Map to store all team records from the bracket
+            const teamRecords = {};
+
+            // Read all matchups from the bracket
+            document.querySelectorAll('.round').forEach(roundElement => {
+                const roundHeader = roundElement.querySelector('.round-header')?.textContent.trim().toLowerCase();
+                let round = 'round1';
+
+                if (roundHeader.includes('conf. semifinals') || roundHeader.includes('conference semifinals')) {
+                    round = 'round2';
+                } else if (roundHeader.includes('conf. finals') || roundHeader.includes('conference finals')) {
+                    round = 'confFinals';
+                } else if (roundHeader.includes('nba finals')) {
+                    round = 'finals';
+                }
+
+                // Get all matchups in this round
+                roundElement.querySelectorAll('.matchup').forEach(matchup => {
+                    const teamRows = matchup.querySelectorAll('.team-row');
+
+                    teamRows.forEach(teamRow => {
+                        const teamNameEl = teamRow.querySelector('.team-name');
+                        const teamWinsEl = teamRow.querySelector('.team-wins');
+
+                        if (!teamNameEl || !teamWinsEl) return;
+
+                        const teamName = teamNameEl.textContent.trim();
+                        const wins = teamWinsEl.textContent.trim();
+
+                        if (teamName === 'TBD' || wins === '-') return;
+
+                        const winsNum = parseInt(wins);
+                        if (isNaN(winsNum)) return;
+
+                        // Initialize team record if not exists
+                        if (!teamRecords[teamName]) {
+                            teamRecords[teamName] = {
+                                round1: 0,
+                                round2: 0,
+                                confFinals: 0,
+                                finals: 0
+                            };
+                        }
+
+                        // Update the appropriate round
+                        teamRecords[teamName][round] = winsNum;
+                        console.log(`📊 ${teamName} - ${round}: ${winsNum} wins`);
+                    });
+                });
+            });
+
+            console.log('Team records from bracket:', teamRecords);
+
+            // Now update player scores
+            let updated = false;
+            players.forEach(player => {
+                const playerData = data.players[player];
+                if (!playerData) return;
+
+                playerData.teams.forEach(team => {
+                    const shortName = getShortTeamName(team.name);
+                    const record = teamRecords[shortName];
+
+                    if (record) {
+                        // Update all rounds
+                        ['round1', 'round2', 'confFinals', 'finals'].forEach(round => {
+                            if (team[round] !== record[round]) {
+                                console.log(`✅ Updated ${player}'s ${team.name} - ${round}: ${team[round]} → ${record[round]}`);
+                                team[round] = record[round];
+                                updated = true;
+                            }
+                        });
+                    }
+                });
+            });
+
+            if (updated) {
+                saveData();
+                console.log('💾 Player scores synced with bracket!');
+            } else {
+                console.log('✅ Player scores already in sync with bracket');
+            }
         }
 
         function calculateScore(player) {
@@ -1413,17 +1562,27 @@
                     console.log('✅ ESPN data loaded successfully');
                     console.log(`Found ${espnData.events.length} games`);
 
+                    // Update last refresh time
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    document.getElementById('last-update').textContent = `Updated: ${timeStr}`;
+
                     // Display all games (playoff, regular season, whatever's available)
                     displayGames(espnData.events);
 
-                    // Filter for playoff games only for scoring
+                    // Process ALL events to extract series information
+                    console.log(`🏀 Processing ${espnData.events.length} games for playoff data...`);
+                    updateScoresFromGames(espnData.events);
+
+                    // Also check if there are explicit playoff events
                     const playoffGames = espnData.events.filter(event => {
                         return event.season?.type === 3; // Type 3 = Playoffs
                     });
 
                     if (playoffGames.length > 0) {
-                        console.log(`🏀 ${playoffGames.length} playoff games found`);
-                        updateScoresFromGames(playoffGames);
+                        console.log(`✅ ${playoffGames.length} playoff games detected`);
+                    } else {
+                        console.log('ℹ️ No explicit playoff games - checking all games for series data');
                     }
                 }
             } catch (error) {
@@ -1510,15 +1669,17 @@
             container.innerHTML = gamesHTML;
         }
 
+        // Store bracket data for dynamic updates
+        let bracketData = {};
+
         // Update scores based on ESPN game data
         function updateScoresFromGames(games) {
-            const teamWins = {};
+            let updated = false;
+            let bracketUpdated = false;
 
             games.forEach(game => {
                 const competition = game.competitions?.[0];
-                if (!competition || competition.status?.type?.state !== 'post') {
-                    return; // Skip in-progress or scheduled games
-                }
+                if (!competition) return;
 
                 const competitors = competition.competitors;
                 if (!competitors || competitors.length !== 2) return;
@@ -1526,30 +1687,281 @@
                 const team1 = competitors[0];
                 const team2 = competitors[1];
 
-                // Determine winner
-                const winner = parseFloat(team1.score) > parseFloat(team2.score) ? team1 : team2;
-                const winnerName = winner.team.displayName;
+                // Get team names
+                const team1Name = normalizeTeamName(team1.team.displayName);
+                const team2Name = normalizeTeamName(team2.team.displayName);
 
-                // Track wins
-                if (!teamWins[winnerName]) {
-                    teamWins[winnerName] = 0;
+                // Get series record (wins in this playoff series)
+                const seriesRecord1 = competition.series?.competitors?.find(c => c.id === team1.id)?.wins || 0;
+                const seriesRecord2 = competition.series?.competitors?.find(c => c.id === team2.id)?.wins || 0;
+
+                // Only update if there are actual series records (playoff games)
+                if (seriesRecord1 === 0 && seriesRecord2 === 0) return;
+
+                console.log(`Series: ${team1Name} ${seriesRecord1} - ${team2Name} ${seriesRecord2}`);
+
+                // Store bracket data for display updates using SHORT names for matching
+                const shortTeam1 = getShortTeamName(team1Name);
+                const shortTeam2 = getShortTeamName(team2Name);
+
+                const matchupKey = `${shortTeam1}_vs_${shortTeam2}`;
+                bracketData[matchupKey] = {
+                    team1: { name: shortTeam1, wins: seriesRecord1 },
+                    team2: { name: shortTeam2, wins: seriesRecord2 }
+                };
+
+                console.log(`📝 Stored bracket data: ${matchupKey} = ${seriesRecord1}-${seriesRecord2}`);
+                bracketUpdated = true;
+
+                // Determine round based on game notes/status
+                const roundType = competition.series?.summary || competition.notes?.[0]?.headline || '';
+                const round = determineRound(roundType);
+
+                console.log(`Round: ${round} (${roundType})`);
+
+                // Update both teams' records immediately after each game
+                [
+                    { name: team1Name, wins: seriesRecord1 },
+                    { name: team2Name, wins: seriesRecord2 }
+                ].forEach(({ name, wins }) => {
+                    // Update all players who have this team (even if wins is 0, to reset)
+                    players.forEach(player => {
+                        const playerData = data.players[player];
+                        if (!playerData) return;
+
+                        playerData.teams.forEach(team => {
+                            const normalizedTeamName = normalizeTeamName(team.name);
+                            if (normalizedTeamName === name) {
+                                // Auto-update the wins for the appropriate round
+                                const currentWins = team[round];
+                                if (currentWins !== wins) {
+                                    const oldWins = team[round];
+                                    team[round] = wins;
+                                    updated = true;
+                                    console.log(`✅ Updated ${player}'s ${team.name} - ${round}: ${oldWins} → ${wins} wins`);
+                                }
+                            }
+                        });
+                    });
+                });
+
+                // Mark champion if series is completed (4 wins)
+                if (seriesRecord1 === 4 || seriesRecord2 === 4) {
+                    const champion = seriesRecord1 === 4 ? team1Name : team2Name;
+
+                    if (round === 'finals') {
+                        console.log(`🏆 CHAMPION: ${champion}`);
+
+                        // Mark champion for all players who have this team
+                        players.forEach(player => {
+                            const playerData = data.players[player];
+                            if (!playerData) return;
+
+                            playerData.teams.forEach(team => {
+                                const normalizedTeamName = normalizeTeamName(team.name);
+                                if (normalizedTeamName === champion && !team.champion) {
+                                    team.champion = true;
+                                    updated = true;
+                                    console.log(`✅ Marked ${player}'s ${team.name} as CHAMPION`);
+                                }
+                            });
+                        });
+                    }
                 }
-                teamWins[winnerName]++;
             });
 
-            console.log('Team wins from ESPN:', teamWins);
+            // Update bracket display if data changed
+            if (bracketUpdated) {
+                updateBracketDisplay();
+            }
 
-            // Note: This is a simplified version - ESPN's API returns current scoreboard
-            // For full playoff bracket tracking, you'd need to track series over time
+            if (updated) {
+                saveData();
+                console.log('💾 Player scores auto-updated from live feed!');
+
+                // Show notification
+                const statusEl = document.getElementById('bracket-update-status');
+                if (statusEl) {
+                    statusEl.textContent = '🎯 Player scores updated automatically!';
+                    statusEl.style.color = '#fdb927';
+                    setTimeout(() => {
+                        statusEl.textContent = '';
+                    }, 5000);
+                }
+            }
+        }
+
+        // Update the bracket HTML display with current series records
+        function updateBracketDisplay() {
+            console.log('🔄 Updating bracket display...');
+            console.log('Current bracket data:', bracketData);
+
+            let updatedCount = 0;
+
+            // Find all matchups in the bracket and update their win counts
+            document.querySelectorAll('.matchup').forEach((matchup, index) => {
+                const teamRows = matchup.querySelectorAll('.team-row');
+                if (teamRows.length !== 2) return;
+
+                const team1Element = teamRows[0];
+                const team2Element = teamRows[1];
+
+                const team1NameEl = team1Element.querySelector('.team-name');
+                const team2NameEl = team2Element.querySelector('.team-name');
+
+                if (!team1NameEl || !team2NameEl) return;
+
+                const team1Name = team1NameEl.textContent.trim();
+                const team2Name = team2NameEl.textContent.trim();
+
+                // Skip TBD matchups
+                if (team1Name === 'TBD' || team2Name === 'TBD') return;
+
+                console.log(`Checking matchup ${index}: ${team1Name} vs ${team2Name}`);
+
+                // Find matching bracket data
+                const matchupKey = `${team1Name}_vs_${team2Name}`;
+                const reverseKey = `${team2Name}_vs_${team1Name}`;
+
+                let matchData = bracketData[matchupKey] || bracketData[reverseKey];
+
+                if (matchData) {
+                    console.log(`✅ Found match data for: ${team1Name} vs ${team2Name}`, matchData);
+
+                    // Update win counts
+                    const team1WinsEl = team1Element.querySelector('.team-wins');
+                    const team2WinsEl = team2Element.querySelector('.team-wins');
+
+                    if (team1WinsEl && team2WinsEl) {
+                        const team1Wins = matchData.team1.name === team1Name ? matchData.team1.wins : matchData.team2.wins;
+                        const team2Wins = matchData.team2.name === team2Name ? matchData.team2.wins : matchData.team1.wins;
+
+                        team1WinsEl.textContent = team1Wins;
+                        team2WinsEl.textContent = team2Wins;
+
+                        // Update winner/eliminated classes
+                        if (team1Wins === 4) {
+                            team1Element.classList.add('winner');
+                            team2Element.classList.add('eliminated');
+                            team2Element.classList.remove('winner');
+                        } else if (team2Wins === 4) {
+                            team2Element.classList.add('winner');
+                            team1Element.classList.add('eliminated');
+                            team1Element.classList.remove('winner');
+                        } else {
+                            team1Element.classList.remove('winner', 'eliminated');
+                            team2Element.classList.remove('winner', 'eliminated');
+                        }
+
+                        console.log(`📊 Updated bracket: ${team1Name} ${team1Wins} - ${team2Name} ${team2Wins}`);
+                        updatedCount++;
+                    }
+                } else {
+                    console.log(`⚠️ No match data found for: ${matchupKey} or ${reverseKey}`);
+                }
+            });
+
+            console.log(`✅ Updated ${updatedCount} matchups in the bracket`);
+
+            // Show status message
+            const statusEl = document.getElementById('bracket-update-status');
+            if (statusEl && updatedCount > 0) {
+                statusEl.textContent = `✅ Bracket updated with ${updatedCount} live series records`;
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                }, 5000);
+            }
+        }
+
+        // Normalize team names for matching
+        function normalizeTeamName(name) {
+            // Map API names to our internal names
+            const mapping = {
+                'Oklahoma City Thunder': 'OKC Thunder',
+                'Los Angeles Lakers': 'LA Lakers',
+                'Boston Celtics': 'Boston Celtics',
+                'New York Knicks': 'New York Knicks',
+                'Philadelphia 76ers': 'Philadelphia 76ers',
+                'Toronto Raptors': 'Toronto Raptors',
+                'Cleveland Cavaliers': 'Cleveland Cavaliers',
+                'Detroit Pistons': 'Detroit Pistons',
+                'Atlanta Hawks': 'Atlanta Hawks',
+                'Orlando Magic': 'Orlando Magic',
+                'Denver Nuggets': 'Denver Nuggets',
+                'Minnesota Timberwolves': 'Minnesota Timberwolves',
+                'Portland Trail Blazers': 'Portland Trail Blazers',
+                'Phoenix Suns': 'Phoenix Suns',
+                'Houston Rockets': 'Houston Rockets',
+                'San Antonio Spurs': 'San Antonio Spurs'
+            };
+
+            return mapping[name] || name;
+        }
+
+        // Get short team name for bracket matching
+        function getShortTeamName(name) {
+            const shortNames = {
+                'OKC Thunder': 'Thunder',
+                'Oklahoma City Thunder': 'Thunder',
+                'LA Lakers': 'Lakers',
+                'Los Angeles Lakers': 'Lakers',
+                'Boston Celtics': 'Celtics',
+                'New York Knicks': 'Knicks',
+                'Philadelphia 76ers': '76ers',
+                'Toronto Raptors': 'Raptors',
+                'Cleveland Cavaliers': 'Cavaliers',
+                'Detroit Pistons': 'Pistons',
+                'Atlanta Hawks': 'Hawks',
+                'Orlando Magic': 'Magic',
+                'Denver Nuggets': 'Nuggets',
+                'Minnesota Timberwolves': 'Timberwolves',
+                'Portland Trail Blazers': 'Trail Blazers',
+                'Phoenix Suns': 'Suns',
+                'Houston Rockets': 'Rockets',
+                'San Antonio Spurs': 'Spurs'
+            };
+
+            return shortNames[name] || name;
+        }
+
+        // Determine playoff round from game description
+        function determineRound(description) {
+            const desc = description.toLowerCase();
+
+            if (desc.includes('nba finals') || desc.includes('championship series')) {
+                return 'finals';
+            } else if (desc.includes('conference final') || desc.includes('conference championship')) {
+                return 'confFinals';
+            } else if (desc.includes('conference semifinal') || desc.includes('semifinal') || desc.includes('round 2')) {
+                return 'round2';
+            } else if (desc.includes('first round') || desc.includes('round 1')) {
+                return 'round1';
+            }
+
+            // Default to round1 if can't determine
+            console.warn(`⚠️ Could not determine round from: "${description}", defaulting to round1`);
+            return 'round1';
         }
 
         // Initialize auto-update on page load
         window.addEventListener('load', () => {
             console.log('🏀 NBA Playoff Tracker loaded - checking ESPN API...');
+
+            // First sync with current bracket display
+            setTimeout(() => {
+                syncPlayerScoresWithBracket();
+            }, 500);
+
+            // Then fetch from ESPN
             autoUpdateFromESPN();
 
-            // Refresh every 5 minutes
-            setInterval(autoUpdateFromESPN, 5 * 60 * 1000);
+            // Refresh every 2 minutes during playoffs for faster updates
+            setInterval(autoUpdateFromESPN, 2 * 60 * 1000);
+
+            // Also sync with bracket every 2 minutes
+            setInterval(() => {
+                syncPlayerScoresWithBracket();
+            }, 2 * 60 * 1000);
         });
 
         render();
