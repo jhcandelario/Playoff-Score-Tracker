@@ -1005,17 +1005,17 @@
                                 </div>
                             </div>
                             <div class="matchup">
-                                <div class="team-row">
+                                <div class="team-row eliminated">
                                     <span class="team-seed">6</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Timberwolves</span>
                                     <span class="team-wins">2</span>
                                 </div>
-                                <div class="team-row">
+                                <div class="team-row winner">
                                     <span class="team-seed">2</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Spurs</span>
-                                    <span class="team-wins">3</span>
+                                    <span class="team-wins">4</span>
                                 </div>
                             </div>
                         </div>
@@ -1028,12 +1028,13 @@
                                     <span class="team-seed">1</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Thunder</span>
-                                    <span class="team-wins">-</span>
+                                    <span class="team-wins">0</span>
                                 </div>
                                 <div class="team-row">
-                                    <span class="team-seed"></span>
-                                    <span class="team-name">TBD</span>
-                                    <span class="team-wins">-</span>
+                                    <span class="team-seed">2</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Spurs</span>
+                                    <span class="team-wins">0</span>
                                 </div>
                             </div>
                         </div>
@@ -1127,17 +1128,17 @@
                         <div class="round">
                             <div class="round-header">Conf. Semifinals</div>
                             <div class="matchup">
-                                <div class="team-row">
+                                <div class="team-row winner">
                                     <span class="team-seed">4</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Cavaliers</span>
-                                    <span class="team-wins">3</span>
+                                    <span class="team-wins">4</span>
                                 </div>
-                                <div class="team-row">
+                                <div class="team-row eliminated">
                                     <span class="team-seed">1</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Pistons</span>
-                                    <span class="team-wins">2</span>
+                                    <span class="team-wins">3</span>
                                 </div>
                             </div>
                             <div class="matchup">
@@ -1164,12 +1165,13 @@
                                     <span class="team-seed">3</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Knicks</span>
-                                    <span class="team-wins">-</span>
+                                    <span class="team-wins">0</span>
                                 </div>
                                 <div class="team-row">
-                                    <span class="team-seed"></span>
-                                    <span class="team-name">TBD</span>
-                                    <span class="team-wins">-</span>
+                                    <span class="team-seed">4</span>
+                                    <img src="https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg" class="team-logo-bracket">
+                                    <span class="team-name">Cavaliers</span>
+                                    <span class="team-wins">0</span>
                                 </div>
                             </div>
                         </div>
@@ -1183,6 +1185,7 @@
                 Player Teams & Scoring
                 <span class="auto-update-badge" style="margin-left: 15px; font-size: 0.5em;">AUTO-SYNC</span>
                 <button class="recalculate-btn" onclick="syncPlayerScoresWithBracket()" style="margin-left: 15px; font-size: 0.55em;">🔄 Sync with Bracket</button>
+                <button class="recalculate-btn" onclick="debugCurrentStandings()" style="margin-left: 10px; font-size: 0.55em; background: #1d428a;">📊 Check Live Standings</button>
             </div>
             <div class="player-cards-grid" id="team-details"></div>
         </div>
@@ -1941,6 +1944,62 @@
             // Default to round1 if can't determine
             console.warn(`⚠️ Could not determine round from: "${description}", defaulting to round1`);
             return 'round1';
+        }
+
+        // Debug function to check current standings from ESPN
+        async function debugCurrentStandings() {
+            console.log('🔍 Fetching current playoff standings from ESPN...');
+
+            try {
+                const espnData = await fetchESPNPlayoffData();
+
+                if (!espnData || !espnData.events) {
+                    alert('❌ Could not fetch data from ESPN');
+                    return;
+                }
+
+                console.log('📋 Current Games and Series Records:');
+                console.log('=====================================');
+
+                let playoffSeriesFound = 0;
+
+                espnData.events.forEach(game => {
+                    const competition = game.competitions?.[0];
+                    if (!competition) return;
+
+                    const competitors = competition.competitors;
+                    if (!competitors || competitors.length !== 2) return;
+
+                    const team1 = competitors[0];
+                    const team2 = competitors[1];
+
+                    // Check for series data
+                    const series = competition.series;
+                    if (series && series.competitors) {
+                        const seriesComp1 = series.competitors.find(c => c.id === team1.id);
+                        const seriesComp2 = series.competitors.find(c => c.id === team2.id);
+
+                        if (seriesComp1 && seriesComp2) {
+                            playoffSeriesFound++;
+                            const roundType = series.summary || competition.notes?.[0]?.headline || 'Unknown';
+
+                            console.log(`\n🏀 ${team1.team.displayName} vs ${team2.team.displayName}`);
+                            console.log(`   Series: ${seriesComp1.wins}-${seriesComp2.wins}`);
+                            console.log(`   Round: ${roundType}`);
+                            console.log(`   Status: ${competition.status?.type?.detail || 'N/A'}`);
+                        }
+                    }
+                });
+
+                console.log('\n=====================================');
+                console.log(`Total playoff series found: ${playoffSeriesFound}`);
+
+                alert(`✅ Check console for detailed standings!\n\nFound ${playoffSeriesFound} playoff series with live data.`);
+
+            } catch (error) {
+                console.error('Error fetching standings:', error);
+                alert('❌ Error fetching data. Check console for details.');
+            }
         }
 
         // Initialize auto-update on page load

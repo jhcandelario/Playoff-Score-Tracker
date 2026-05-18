@@ -1,0 +1,38 @@
+CURRENT PLAYOFF STANDINGS (2026-05-17)
+======================================
+
+WEST - ROUND 1 (COMPLETED):
+✅ Thunder 4-0 Suns
+✅ Lakers 4-2 Rockets  
+✅ Timberwolves 4-2 Nuggets
+✅ Spurs 4-1 Trail Blazers
+
+WEST - ROUND 2:
+✅ Thunder 4-0 Lakers (SERIES COMPLETE)
+✅ Spurs 4-2 Timberwolves (SERIES COMPLETE)
+
+WEST - CONF FINALS:
+⏳ Thunder 0-0 Spurs (STARTING)
+
+EAST - ROUND 1 (COMPLETED):
+✅ Pistons 4-3 Magic
+✅ Cavaliers 4-3 Raptors
+✅ Knicks 4-2 Hawks
+✅ 76ers 4-3 Celtics
+
+EAST - ROUND 2:
+✅ Cavaliers 4-3 Pistons (SERIES COMPLETE)
+✅ Knicks 4-0 76ers (SERIES COMPLETE)
+
+EAST - CONF FINALS:
+⏳ Knicks 0-0 Cavaliers (STARTING)
+
+CORRECT PLAYER SCORES:
+======================
+Mass: Thunder R1(4×1) + Thunder R2(4×2) + 76ers R1(4×1) = 4+8+4 = 16 pts
+Ian: Spurs R1(4×1) + Spurs R2(4×2) + Hawks R1(2×1) = 4+8+2 = 14 pts
+Jonathan: Knicks R1(4×1) + Knicks R2(4×2) + Magic R1(3×1) = 4+8+3 = 15 pts
+Aleks: Cavaliers R1(4×1) + Cavaliers R2(4×2) + Timberwolves R1(4×1) + Timberwolves R2(2×2) = 4+8+4+4 = 20 pts
+Sydney: Lakers R1(4×1) + Pistons R1(4×1) + Pistons R2(3×2) = 4+4+6 = 14 pts
+Ugo: Celtics R1(3×1) + Raptors R1(3×1) = 3+3 = 6 pts
+Ben: Nuggets R1(2×1) + Rockets R1(2×1) = 2+2 = 4 pts
