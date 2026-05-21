@@ -1,4 +1,4 @@
-/<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
             font-family: 'Arial', 'Helvetica Neue', sans-serif;
             background: #000;
             color: #fff;
-            padding: 20px;
+            padding: 10px;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
@@ -99,7 +99,7 @@
         }
 
         .container {
-            max-width: 1650px;
+            max-width: 1600px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -107,8 +107,8 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 50px 20px;
+            margin-bottom: 12px;
+            padding: 20px 15px;
             background: #000;
             position: relative;
             overflow: hidden;
@@ -127,12 +127,12 @@
         }
 
         h1 {
-            font-size: 3.5em;
+            font-size: 2em;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 5px;
+            letter-spacing: 4px;
             color: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             position: relative;
             z-index: 1;
             text-shadow: 0 0 30px rgba(253, 185, 39, 0.5);
@@ -148,19 +148,19 @@
         }
 
         .nba-logo-img {
-            height: 80px;
+            height: 40px;
             width: auto;
             vertical-align: middle;
-            margin: 0 15px;
+            margin: 0 8px;
             filter: drop-shadow(0 0 20px rgba(253, 185, 39, 0.3));
         }
 
         .subtitle {
-            font-size: 1.2em;
+            font-size: 0.75em;
             color: #fff;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 1.5px;
             position: relative;
             z-index: 1;
             opacity: 0.9;
@@ -170,8 +170,8 @@
         .leaderboard-section {
             background: #1d428a;
             border-radius: 0;
-            padding: 20px 0;
-            margin-bottom: 20px;
+            padding: 10px 0;
+            margin-bottom: 10px;
             overflow: hidden;
             position: relative;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -206,10 +206,10 @@
         .leaderboard-item {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 20px;
+            gap: 10px;
+            padding: 8px 16px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
+            border-radius: 20px;
             border: 2px solid rgba(255, 255, 255, 0.4);
             white-space: nowrap;
             flex-shrink: 0;
@@ -223,7 +223,7 @@
         }
 
         .leaderboard-rank {
-            font-size: 1.1em;
+            font-size: 0.95em;
             font-weight: 900;
             color: #fff;
         }
@@ -235,13 +235,13 @@
         }
 
         .player-name {
-            font-size: 1em;
+            font-size: 0.9em;
             font-weight: 700;
             color: #fff;
         }
 
         .player-score {
-            font-size: 1.3em;
+            font-size: 1.1em;
             font-weight: 900;
             color: #fff;
         }
@@ -249,32 +249,32 @@
         /* Scoring System */
         .scoring-system {
             background: #111;
-            padding: 25px 35px;
+            padding: 12px 20px;
             border-radius: 0;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             border-top: 3px solid #c8102e;
         }
 
         .scoring-title {
-            font-size: 1.2em;
+            font-size: 1em;
             font-weight: 900;
             text-transform: uppercase;
             color: #fff;
-            margin-bottom: 18px;
+            margin-bottom: 12px;
             text-align: center;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
         }
 
         .scoring-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 8px;
         }
 
         .scoring-item {
             background: #1a1a1a;
-            padding: 14px 18px;
+            padding: 10px 14px;
             border-radius: 4px;
             border-left: 4px solid #1d428a;
             display: flex;
@@ -286,11 +286,11 @@
         .scoring-label {
             font-weight: 700;
             color: #fff;
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
 
         .scoring-value {
-            font-size: 1.4em;
+            font-size: 1.2em;
             font-weight: 900;
             color: #fff;
         }
@@ -308,10 +308,10 @@
         .bracket-section {
             background: #111;
             border-radius: 0;
-            padding: 30px 20px;
+            padding: 15px 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             overflow-x: auto;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             border-top: 3px solid #1d428a;
             border-bottom: 3px solid #1d428a;
         }
@@ -335,7 +335,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-width: 1400px;
+            min-width: 1200px;
             gap: 0;
         }
 
@@ -371,19 +371,19 @@
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            padding: 0 15px;
-            min-width: 220px;
+            padding: 0 10px;
+            min-width: 180px;
         }
 
         .round-header {
-            font-size: 0.72em;
+            font-size: 0.65em;
             font-weight: 700;
             text-transform: uppercase;
             color: #999;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             letter-spacing: 0.8px;
-            min-height: 20px;
+            min-height: 18px;
         }
 
         .matchup {
@@ -391,15 +391,15 @@
             border: 1px solid #333;
             border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         .team-row {
-            padding: 10px 12px;
+            padding: 8px 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #1a1a1a;
             border-bottom: 1px solid #333;
         }
@@ -409,30 +409,30 @@
         }
 
         .team-seed {
-            font-size: 0.75em;
+            font-size: 0.7em;
             color: #999;
             font-weight: 900;
-            min-width: 15px;
+            min-width: 12px;
         }
 
         .team-logo-bracket {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             object-fit: contain;
         }
 
         .team-name {
-            font-size: 0.9em;
+            font-size: 0.8em;
             font-weight: 700;
             color: #fff;
             flex: 1;
         }
 
         .team-wins {
-            font-size: 0.95em;
+            font-size: 0.85em;
             font-weight: 900;
             color: #666;
-            min-width: 22px;
+            min-width: 20px;
             text-align: center;
         }
 
@@ -453,27 +453,27 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 0 40px;
-            min-width: 200px;
+            padding: 0 25px;
+            min-width: 160px;
         }
 
         .finals-label {
-            font-size: 0.9em;
+            font-size: 0.75em;
             font-weight: 900;
             text-transform: uppercase;
             color: #c8102e;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
         .finals-logo-container {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .finals-logo-container img {
-            width: 60px;
-            height: 60px;
+            width: 35px;
+            height: 35px;
             filter: brightness(1.2);
         }
 
@@ -481,33 +481,33 @@
             background: #1a1a1a;
             border: 2px solid #fdb927;
             border-radius: 4px;
-            padding: 15px 20px;
+            padding: 10px 15px;
             text-align: center;
-            min-width: 140px;
+            min-width: 120px;
             box-shadow: 0 0 20px rgba(253, 185, 39, 0.3);
         }
 
         .champion-box-label {
-            font-size: 0.7em;
+            font-size: 0.65em;
             color: #999;
             font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .champion-name {
-            font-size: 0.9em;
+            font-size: 0.8em;
             font-weight: 700;
             color: #fdb927;
         }
 
         .trophy-container {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: center;
         }
 
         .championship-trophy {
-            height: 150px;
+            height: 80px;
             width: auto;
             filter: drop-shadow(0 5px 20px rgba(253, 185, 39, 0.5));
             animation: trophy-glow 3s ease-in-out infinite;
@@ -526,24 +526,24 @@
         .game-schedule-section {
             background: #111;
             border-radius: 0;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             border-top: 3px solid #1d428a;
         }
 
         .schedule-title {
-            font-size: 1.2em;
+            font-size: 1em;
             font-weight: 900;
             text-transform: uppercase;
             color: #fff;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
             letter-spacing: 1.5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .auto-update-badge {
@@ -686,17 +686,17 @@
         .team-details-panel {
             background: #111;
             border-radius: 0;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             border-top: 3px solid #c8102e;
         }
 
         .panel-title {
-            font-size: 1.2em;
+            font-size: 1em;
             font-weight: 900;
             text-transform: uppercase;
             color: #fff;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
             letter-spacing: 1.5px;
         }
