@@ -590,11 +590,42 @@
         }
 
         .games-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            max-width: 1000px;
+            display: flex;
+            gap: 20px;
+            max-width: 1596px;
             margin: 0 auto;
+            justify-content: center;
+        }
+
+        .conference-games {
+            flex: 1;
+            max-width: 732px;
+        }
+
+        .conference-games-title {
+            font-size: 0.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #fdb927;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .finals-games {
+            width: 100%;
+            max-width: 732px;
+            margin: 0 auto 20px;
+        }
+
+        .finals-games-title {
+            font-size: 0.9em;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #c8102e;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
         }
 
         .game-card {
@@ -603,6 +634,7 @@
             padding: 15px;
             border: 1px solid #333;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            min-width: 426px;
         }
 
         .game-card.live {
@@ -666,6 +698,10 @@
             flex: 1;
             font-weight: 700;
             font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
         }
 
         .game-team-score {
@@ -1653,13 +1689,16 @@
         // ESPN API Integration - Fetch live playoff data
         async function fetchESPNPlayoffData() {
             try {
-                // Fetch last 7 days of games to capture all active playoff series
+                // Fetch last 7 days and next 2 days of games
                 const today = new Date();
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
 
-                const endDate = today.toISOString().split('T')[0].replace(/-/g, '');
+                const twoDaysAhead = new Date(today);
+                twoDaysAhead.setDate(today.getDate() + 2);
+
                 const startDate = sevenDaysAgo.toISOString().split('T')[0].replace(/-/g, '');
+                const endDate = twoDaysAhead.toISOString().split('T')[0].replace(/-/g, '');
 
                 const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${startDate}-${endDate}`;
                 console.log(`📅 Fetching games from ${startDate} to ${endDate}`);
@@ -1718,6 +1757,24 @@
             }
         }
 
+        // Western Conference teams
+        const westTeams = ['Thunder', 'Lakers', 'Spurs', 'Timberwolves', 'Nuggets', 'Suns', 'Rockets', 'Trail Blazers',
+                           'Oklahoma City Thunder', 'Los Angeles Lakers', 'San Antonio Spurs', 'Minnesota Timberwolves',
+                           'Denver Nuggets', 'Phoenix Suns', 'Houston Rockets', 'Portland Trail Blazers'];
+
+        // Eastern Conference teams
+        const eastTeams = ['Celtics', 'Knicks', '76ers', 'Cavaliers', 'Pistons', 'Hawks', 'Magic', 'Raptors',
+                           'Boston Celtics', 'New York Knicks', 'Philadelphia 76ers', 'Cleveland Cavaliers',
+                           'Detroit Pistons', 'Atlanta Hawks', 'Orlando Magic', 'Toronto Raptors'];
+
+        function isWestTeam(teamName) {
+            return westTeams.some(team => teamName.includes(team));
+        }
+
+        function isEastTeam(teamName) {
+            return eastTeams.some(team => teamName.includes(team));
+        }
+
         // Display games in the schedule section
         function displayGames(games) {
             const container = document.getElementById('games-container');
@@ -1727,11 +1784,36 @@
                 return;
             }
 
-            // Show upcoming and live games
-            const relevantGames = games.filter(game => {
-                const state = game.competitions?.[0]?.status?.type?.state;
-                return state === 'pre' || state === 'in'; // Scheduled or in progress
-            }).slice(0, 6); // Show max 6 games
+            // Separate live and upcoming games
+            const liveGames = games.filter(game => {
+                return game.competitions?.[0]?.status?.type?.state === 'in';
+            });
+
+            const upcomingGames = games.filter(game => {
+                return game.competitions?.[0]?.status?.type?.state === 'pre';
+            });
+
+            // For upcoming games, show only one per series (the next game)
+            const upcomingBySeries = {};
+            upcomingGames.forEach(game => {
+                const competition = game.competitions?.[0];
+                const competitors = competition?.competitors;
+                if (!competitors || competitors.length !== 2) return;
+
+                const team1 = competitors[0].team?.displayName || '';
+                const team2 = competitors[1].team?.displayName || '';
+                const seriesKey = [team1, team2].sort().join('_vs_');
+
+                // Keep only the earliest upcoming game for each series
+                if (!upcomingBySeries[seriesKey] || new Date(game.date) < new Date(upcomingBySeries[seriesKey].date)) {
+                    upcomingBySeries[seriesKey] = game;
+                }
+            });
+
+            const filteredUpcomingGames = Object.values(upcomingBySeries);
+
+            // Combine live games and filtered upcoming games
+            const relevantGames = [...liveGames, ...filteredUpcomingGames];
 
             if (relevantGames.length === 0) {
                 // Show recent completed games if no upcoming
@@ -1740,18 +1822,82 @@
                 }).slice(0, 6);
                 renderGameCards(completedGames, container);
             } else {
-                renderGameCards(relevantGames, container);
+                // Separate games by conference and Finals
+                const westGames = [];
+                const eastGames = [];
+                const finalsGames = [];
+
+                relevantGames.forEach(game => {
+                    const competition = game.competitions?.[0];
+                    const competitors = competition?.competitors;
+                    if (!competitors || competitors.length !== 2) return;
+
+                    const team1 = competitors[0].team?.displayName || '';
+                    const team2 = competitors[1].team?.displayName || '';
+
+                    const team1IsWest = isWestTeam(team1);
+                    const team1IsEast = isEastTeam(team1);
+                    const team2IsWest = isWestTeam(team2);
+                    const team2IsEast = isEastTeam(team2);
+
+                    // Finals: one team from West, one from East
+                    if ((team1IsWest && team2IsEast) || (team1IsEast && team2IsWest)) {
+                        finalsGames.push(game);
+                    }
+                    // West Conference game
+                    else if (team1IsWest && team2IsWest) {
+                        westGames.push(game);
+                    }
+                    // East Conference game
+                    else if (team1IsEast && team2IsEast) {
+                        eastGames.push(game);
+                    }
+                });
+
+                renderGameCardsByConference(westGames, eastGames, finalsGames, container);
             }
         }
 
-        // Render game cards
-        function renderGameCards(games, container) {
-            if (games.length === 0) {
-                container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No games available</div>';
-                return;
+        // Render game cards by conference
+        function renderGameCardsByConference(westGames, eastGames, finalsGames, container) {
+            const westHTML = generateGameCardsHTML(westGames);
+            const eastHTML = generateGameCardsHTML(eastGames);
+            const finalsHTML = generateGameCardsHTML(finalsGames);
+
+            let html = '';
+
+            // Show Finals games at the top if they exist
+            if (finalsHTML) {
+                html += `
+                    <div class="finals-games">
+                        <div class="finals-games-title">🏆 NBA Finals 🏆</div>
+                        ${finalsHTML}
+                    </div>
+                `;
             }
 
-            const gamesHTML = games.map(game => {
+            // Show conference games side by side
+            html += `
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <div class="conference-games">
+                        <div class="conference-games-title">Western Conference</div>
+                        ${westHTML || '<div style="color: #999; text-align: center; padding: 20px;">No games</div>'}
+                    </div>
+                    <div class="conference-games">
+                        <div class="conference-games-title">Eastern Conference</div>
+                        ${eastHTML || '<div style="color: #999; text-align: center; padding: 20px;">No games</div>'}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Generate HTML for game cards
+        function generateGameCardsHTML(games) {
+            if (games.length === 0) return '';
+
+            return games.map(game => {
                 const competition = game.competitions?.[0];
                 const status = competition?.status;
                 const state = status?.type?.state;
@@ -1792,8 +1938,48 @@
                     </div>
                 `;
             }).join('');
+        }
 
-            container.innerHTML = gamesHTML;
+        // Render game cards (fallback for completed games)
+        function renderGameCards(games, container) {
+            if (games.length === 0) {
+                container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No games available</div>';
+                return;
+            }
+
+            // Separate by conference and Finals for completed games too
+            const westGames = [];
+            const eastGames = [];
+            const finalsGames = [];
+
+            games.forEach(game => {
+                const competition = game.competitions?.[0];
+                const competitors = competition?.competitors;
+                if (!competitors || competitors.length !== 2) return;
+
+                const team1 = competitors[0].team?.displayName || '';
+                const team2 = competitors[1].team?.displayName || '';
+
+                const team1IsWest = isWestTeam(team1);
+                const team1IsEast = isEastTeam(team1);
+                const team2IsWest = isWestTeam(team2);
+                const team2IsEast = isEastTeam(team2);
+
+                // Finals: one team from West, one from East
+                if ((team1IsWest && team2IsEast) || (team1IsEast && team2IsWest)) {
+                    finalsGames.push(game);
+                }
+                // West Conference game
+                else if (team1IsWest && team2IsWest) {
+                    westGames.push(game);
+                }
+                // East Conference game
+                else if (team1IsEast && team2IsEast) {
+                    eastGames.push(game);
+                }
+            });
+
+            renderGameCardsByConference(westGames, eastGames, finalsGames, container);
         }
 
         // Store bracket data for dynamic updates
