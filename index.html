@@ -702,124 +702,154 @@
         }
 
         .player-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .player-card-detail {
             background: #1a1a1a;
-            border-radius: 4px;
-            padding: 15px;
+            border-radius: 6px;
+            padding: 15px 18px;
             border: 1px solid #333;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 18px;
         }
 
         .player-header-detail {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #1d428a;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 90px;
+            padding-right: 15px;
+            border-right: 1px solid #333;
         }
 
         .player-name-detail {
-            font-size: 1.2em;
+            font-size: 0.85em;
             font-weight: 900;
             color: #fff;
             text-transform: uppercase;
+            margin-bottom: 3px;
+            line-height: 1;
         }
 
         .player-total-score {
-            font-size: 1.6em;
+            font-size: 1.2em;
             font-weight: 900;
             color: #fdb927;
+            line-height: 1;
         }
 
         .teams-wrapper {
-            display: grid;
-            gap: 10px;
+            display: flex;
+            gap: 15px;
+            flex: 1;
         }
 
         .single-team {
-            background: #222;
-            border-radius: 4px;
-            padding: 10px;
-            border: 1px solid #333;
-        }
-
-        .team-header-row {
-            margin-bottom: 8px;
-        }
-
-        .team-name-display-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 8px;
-            background: #2a2a2a;
-            border-radius: 3px;
-            border: 1px solid #444;
-        }
-
-        .team-logo-small {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-        }
-
-        .team-name-input {
             flex: 1;
-            padding: 0;
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 0.9em;
-            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            padding: 12px 12px 12px 120px;
         }
 
-        .team-name-input:focus {
-            outline: none;
+        .single-team::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 120px;
+            bottom: 0;
+            background: linear-gradient(90deg,
+                rgba(26, 26, 26, 0.4) 0%,
+                rgba(26, 26, 26, 0.7) 70%,
+                rgba(26, 26, 26, 0.95) 100%);
+            z-index: 0;
+            pointer-events: none;
         }
+
+        .single-team > * {
+            position: relative;
+            z-index: 1;
+        }
+
 
         .wins-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
-        .win-box {
+        .win-round-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .win-round-label {
+            font-size: 0.45em;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .basketball-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .basketball-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
             background: #2a2a2a;
-            padding: 6px 4px;
-            border-radius: 3px;
-            text-align: center;
             border: 1px solid #444;
+            position: relative;
+            cursor: pointer;
         }
 
-        .win-box-label {
-            font-size: 0.6em;
-            color: #999;
-            margin-bottom: 3px;
+        .basketball-dot.filled {
+            background: radial-gradient(circle at 30% 30%, #ff8c42, #ff6b35);
+            border-color: #ff6b35;
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+        }
+
+        .basketball-dot.filled::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .basketball-dot.filled::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .champion-badge {
+            margin-left: 8px;
+            padding: 3px 8px;
+            background: rgba(200, 16, 46, 0.3);
+            border-radius: 10px;
+            border: 1px solid #c8102e;
+            font-size: 0.5em;
+            color: #fdb927;
             font-weight: 700;
             text-transform: uppercase;
-        }
-
-        .win-box input {
-            width: 100%;
-            padding: 3px;
-            background: #1a1a1a;
-            border: 1px solid #444;
-            border-radius: 3px;
-            text-align: center;
-            color: #fdb927;
-            font-size: 1em;
-            font-weight: 900;
-        }
-
-        .win-box input:focus {
-            outline: none;
-            border-color: #fdb927;
+            white-space: nowrap;
         }
 
         .champion-row {
@@ -1395,6 +1425,21 @@
             return total;
         }
 
+        // Toggle basketball wins when clicked
+        function toggleWin(player, teamIdx, round, dotIdx) {
+            const newValue = dotIdx + 1;
+            const currentValue = data.players[player].teams[teamIdx][round];
+
+            // If clicking on an already filled dot, set to that value, otherwise toggle
+            if (newValue === currentValue) {
+                data.players[player].teams[teamIdx][round] = dotIdx;
+            } else {
+                data.players[player].teams[teamIdx][round] = newValue;
+            }
+
+            saveData();
+        }
+
         function render() {
             const leaderboard = document.getElementById('leaderboard');
             const teamDetails = document.getElementById('team-details');
@@ -1427,63 +1472,45 @@
                         <div class="teams-wrapper">
                             ${playerData.teams.map((team, idx) => {
                                 const logoUrl = getTeamLogo(team.name);
+
+                                // Generate basketball dots for each round
+                                const generateDots = (wins) => {
+                                    let dotsHTML = '';
+                                    for (let i = 0; i < 4; i++) {
+                                        dotsHTML += `<div class="basketball-dot ${i < wins ? 'filled' : ''}" onclick="toggleWin('${player}', ${idx}, '${['round1', 'round2', 'confFinals', 'finals'][Math.floor(i / 4)]}', ${i % 4})"></div>`;
+                                    }
+                                    return dotsHTML;
+                                };
+
                                 return `
-                                <div class="single-team" style="background-image: url('${logoUrl}'); background-size: 120px; background-repeat: no-repeat; background-position: right 10px center; background-blend-mode: overlay; opacity: 0.95;">
-                                    <div class="team-header-row">
-                                        <div class="team-name-display-wrapper">
-                                            ${logoUrl ? `<img src="${logoUrl}" alt="${team.name}" class="team-logo-small">` : ''}
-                                            <input
-                                                type="text"
-                                                class="team-name-input"
-                                                value="${team.name}"
-                                                placeholder="Team ${idx + 1}"
-                                                onchange="data.players['${player}'].teams[${idx}].name = this.value; saveData();"
-                                            />
-                                        </div>
-                                    </div>
+                                <div class="single-team" style="background-image: url('${logoUrl}'); background-size: auto 177%; background-position: left 5px center; background-repeat: no-repeat;">
                                     <div class="wins-row">
-                                        <div class="win-box">
-                                            <div class="win-box-label">R1</div>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="4"
-                                                value="${team.round1}"
-                                                onchange="data.players['${player}'].teams[${idx}].round1 = parseInt(this.value) || 0; saveData();"
-                                            />
+                                        <div class="win-round-group">
+                                            <span class="win-round-label">R1</span>
+                                            <div class="basketball-dots">
+                                                ${[...Array(4)].map((_, i) => `<div class="basketball-dot ${i < team.round1 ? 'filled' : ''}" onclick="toggleWin('${player}', ${idx}, 'round1', ${i})"></div>`).join('')}
+                                            </div>
                                         </div>
-                                        <div class="win-box">
-                                            <div class="win-box-label">R2</div>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="4"
-                                                value="${team.round2}"
-                                                onchange="data.players['${player}'].teams[${idx}].round2 = parseInt(this.value) || 0; saveData();"
-                                            />
+                                        <div class="win-round-group">
+                                            <span class="win-round-label">R2</span>
+                                            <div class="basketball-dots">
+                                                ${[...Array(4)].map((_, i) => `<div class="basketball-dot ${i < team.round2 ? 'filled' : ''}" onclick="toggleWin('${player}', ${idx}, 'round2', ${i})"></div>`).join('')}
+                                            </div>
                                         </div>
-                                        <div class="win-box">
-                                            <div class="win-box-label">CF</div>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="4"
-                                                value="${team.confFinals}"
-                                                onchange="data.players['${player}'].teams[${idx}].confFinals = parseInt(this.value) || 0; saveData();"
-                                            />
+                                        <div class="win-round-group">
+                                            <span class="win-round-label">CF</span>
+                                            <div class="basketball-dots">
+                                                ${[...Array(4)].map((_, i) => `<div class="basketball-dot ${i < team.confFinals ? 'filled' : ''}" onclick="toggleWin('${player}', ${idx}, 'confFinals', ${i})"></div>`).join('')}
+                                            </div>
                                         </div>
-                                        <div class="win-box">
-                                            <div class="win-box-label">Finals</div>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="4"
-                                                value="${team.finals}"
-                                                onchange="data.players['${player}'].teams[${idx}].finals = parseInt(this.value) || 0; saveData();"
-                                            />
+                                        <div class="win-round-group">
+                                            <span class="win-round-label">F</span>
+                                            <div class="basketball-dots">
+                                                ${[...Array(4)].map((_, i) => `<div class="basketball-dot ${i < team.finals ? 'filled' : ''}" onclick="toggleWin('${player}', ${idx}, 'finals', ${i})"></div>`).join('')}
+                                            </div>
                                         </div>
+                                        ${team.finals === 4 ? '<div class="champion-badge">🏆 FINALS</div>' : ''}
                                     </div>
-                                    ${team.finals === 4 ? '<div class="champion-row"><label>🏆 NBA CHAMPION (+5 pts)</label></div>' : ''}
                                 </div>
                                 `;
                             }).join('')}
