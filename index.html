@@ -1387,7 +1387,8 @@
                 total += team.round2 * 2;
                 total += team.confFinals * 3;
                 total += team.finals * 4;
-                if (team.champion) {
+                // Automatically award +5 bonus if team won the Finals (4 wins)
+                if (team.finals === 4) {
                     total += 5;
                 }
             });
@@ -1482,16 +1483,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="champion-row">
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                ${team.champion ? 'checked' : ''}
-                                                onchange="data.players['${player}'].teams[${idx}].champion = this.checked; saveData();"
-                                            />
-                                            🏆 NBA Champion (+5 pts)
-                                        </label>
-                                    </div>
+                                    ${team.finals === 4 ? '<div class="champion-row"><label>🏆 NBA CHAMPION (+5 pts)</label></div>' : ''}
                                 </div>
                                 `;
                             }).join('')}
@@ -1786,28 +1778,10 @@
                     });
                 });
 
-                // Mark champion if series is completed (4 wins)
-                if (seriesRecord1 === 4 || seriesRecord2 === 4) {
+                // Championship bonus is now automatic when team.finals === 4
+                if ((seriesRecord1 === 4 || seriesRecord2 === 4) && round === 'finals') {
                     const champion = seriesRecord1 === 4 ? team1Name : team2Name;
-
-                    if (round === 'finals') {
-                        console.log(`🏆 CHAMPION: ${champion}`);
-
-                        // Mark champion for all players who have this team
-                        players.forEach(player => {
-                            const playerData = data.players[player];
-                            if (!playerData) return;
-
-                            playerData.teams.forEach(team => {
-                                const normalizedTeamName = normalizeTeamName(team.name);
-                                if (normalizedTeamName === champion && !team.champion) {
-                                    team.champion = true;
-                                    updated = true;
-                                    console.log(`✅ Marked ${player}'s ${team.name} as CHAMPION`);
-                                }
-                            });
-                        });
-                    }
+                    console.log(`🏆 CHAMPION: ${champion} (automatic +5 bonus applied)`);
                 }
             });
 
