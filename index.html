@@ -1028,13 +1028,13 @@
                                     <span class="team-seed">1</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Thunder</span>
-                                    <span class="team-wins">0</span>
+                                    <span class="team-wins">1</span>
                                 </div>
                                 <div class="team-row">
                                     <span class="team-seed">2</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Spurs</span>
-                                    <span class="team-wins">0</span>
+                                    <span class="team-wins">1</span>
                                 </div>
                             </div>
                         </div>
@@ -1539,15 +1539,25 @@
         // ESPN API Integration - Fetch live playoff data
         async function fetchESPNPlayoffData() {
             try {
-                // ESPN's scoreboard API for NBA playoffs (2026 season)
-                const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard');
+                // Fetch last 7 days of games to capture all active playoff series
+                const today = new Date();
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+
+                const endDate = today.toISOString().split('T')[0].replace(/-/g, '');
+                const startDate = sevenDaysAgo.toISOString().split('T')[0].replace(/-/g, '');
+
+                const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${startDate}-${endDate}`;
+                console.log(`📅 Fetching games from ${startDate} to ${endDate}`);
+
+                const response = await fetch(url);
 
                 if (!response.ok) {
                     throw new Error(`ESPN API Error: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('ESPN playoff data:', data);
+                console.log(`✅ Fetched ${data.events?.length || 0} games from ESPN`);
 
                 return data;
             } catch (error) {
@@ -1680,7 +1690,35 @@
             let updated = false;
             let bracketUpdated = false;
 
+            // Group games by matchup and only keep the most recent game for each unique matchup
+            const latestGamesByMatchup = {};
+
             games.forEach(game => {
+                const competition = game.competitions?.[0];
+                if (!competition || !competition.series) return;
+
+                const competitors = competition.competitors;
+                if (!competitors || competitors.length !== 2) return;
+
+                const team1Name = normalizeTeamName(competitors[0].team.displayName);
+                const team2Name = normalizeTeamName(competitors[1].team.displayName);
+                const shortTeam1 = getShortTeamName(team1Name);
+                const shortTeam2 = getShortTeamName(team2Name);
+
+                // Create matchup key (alphabetically sorted so order doesn't matter)
+                const matchupKey = [shortTeam1, shortTeam2].sort().join('_vs_');
+
+                // Keep the game with the latest date
+                const gameDate = new Date(game.date);
+                if (!latestGamesByMatchup[matchupKey] || new Date(latestGamesByMatchup[matchupKey].date) < gameDate) {
+                    latestGamesByMatchup[matchupKey] = game;
+                }
+            });
+
+            console.log(`📊 Processing ${Object.keys(latestGamesByMatchup).length} unique matchups (filtered from ${games.length} total games)`);
+
+            // Now process only the latest game from each matchup
+            Object.values(latestGamesByMatchup).forEach(game => {
                 const competition = game.competitions?.[0];
                 if (!competition) return;
 
@@ -1716,9 +1754,9 @@
                 console.log(`📝 Stored bracket data: ${matchupKey} = ${seriesRecord1}-${seriesRecord2}`);
                 bracketUpdated = true;
 
-                // Determine round based on game notes/status
+                // Determine round based on game notes/status and team matchup
                 const roundType = competition.series?.summary || competition.notes?.[0]?.headline || '';
-                const round = determineRound(roundType);
+                const round = determineRound(roundType, shortTeam1, shortTeam2);
 
                 console.log(`Round: ${round} (${roundType})`);
 
@@ -1927,8 +1965,59 @@
             return shortNames[name] || name;
         }
 
+        // Manual matchup-to-round mapping (source of truth)
+        const MATCHUP_ROUNDS = {
+            // Conference Finals (current active series)
+            'Knicks_Cavaliers': 'confFinals',
+            'Cavaliers_Knicks': 'confFinals',
+            'Thunder_Spurs': 'confFinals',
+            'Spurs_Thunder': 'confFinals',
+
+            // Round 2 (completed)
+            'Thunder_Lakers': 'round2',
+            'Lakers_Thunder': 'round2',
+            'Spurs_Timberwolves': 'round2',
+            'Timberwolves_Spurs': 'round2',
+            'Cavaliers_Pistons': 'round2',
+            'Pistons_Cavaliers': 'round2',
+            'Knicks_76ers': 'round2',
+            '76ers_Knicks': 'round2',
+
+            // Round 1 (completed)
+            'Thunder_Suns': 'round1',
+            'Suns_Thunder': 'round1',
+            'Lakers_Rockets': 'round1',
+            'Rockets_Lakers': 'round1',
+            'Timberwolves_Nuggets': 'round1',
+            'Nuggets_Timberwolves': 'round1',
+            'Spurs_Trail Blazers': 'round1',
+            'Trail Blazers_Spurs': 'round1',
+            'Pistons_Magic': 'round1',
+            'Magic_Pistons': 'round1',
+            'Cavaliers_Raptors': 'round1',
+            'Raptors_Cavaliers': 'round1',
+            'Knicks_Hawks': 'round1',
+            'Hawks_Knicks': 'round1',
+            '76ers_Celtics': 'round1',
+            'Celtics_76ers': 'round1'
+        };
+
         // Determine playoff round from game description
-        function determineRound(description) {
+        function determineRound(description, team1Short, team2Short) {
+            // First check manual mapping
+            const matchupKey1 = `${team1Short}_${team2Short}`;
+            const matchupKey2 = `${team2Short}_${team1Short}`;
+
+            if (MATCHUP_ROUNDS[matchupKey1]) {
+                console.log(`✅ Round detected from mapping: ${MATCHUP_ROUNDS[matchupKey1]} (${matchupKey1})`);
+                return MATCHUP_ROUNDS[matchupKey1];
+            }
+            if (MATCHUP_ROUNDS[matchupKey2]) {
+                console.log(`✅ Round detected from mapping: ${MATCHUP_ROUNDS[matchupKey2]} (${matchupKey2})`);
+                return MATCHUP_ROUNDS[matchupKey2];
+            }
+
+            // Fallback to description parsing
             const desc = description.toLowerCase();
 
             if (desc.includes('nba finals') || desc.includes('championship series')) {
@@ -1942,7 +2031,7 @@
             }
 
             // Default to round1 if can't determine
-            console.warn(`⚠️ Could not determine round from: "${description}", defaulting to round1`);
+            console.warn(`⚠️ Could not determine round from: "${description}" or matchup "${matchupKey1}", defaulting to round1`);
             return 'round1';
         }
 
