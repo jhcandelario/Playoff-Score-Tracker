@@ -1299,17 +1299,17 @@
                         <div class="round">
                             <div class="round-header">Conf. Finals</div>
                             <div class="matchup">
-                                <div class="team-row">
+                                <div class="team-row winner">
                                     <span class="team-seed">3</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Knicks</span>
-                                    <span class="team-wins">0</span>
+                                    <span class="team-wins">4</span>
                                 </div>
-                                <div class="team-row">
+                                <div class="team-row eliminated">
                                     <span class="team-seed">4</span>
                                     <img src="https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg" class="team-logo-bracket">
                                     <span class="team-name">Cavaliers</span>
-                                    <span class="team-wins">0</span>
+                                    <span class="team-wins">3</span>
                                 </div>
                             </div>
                         </div>
@@ -1876,19 +1876,37 @@
                 `;
             }
 
-            // Show conference games side by side
-            html += `
-                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                    <div class="conference-games">
-                        <div class="conference-games-title">Western Conference</div>
-                        ${westHTML || '<div style="color: #999; text-align: center; padding: 20px;">No games</div>'}
-                    </div>
-                    <div class="conference-games">
-                        <div class="conference-games-title">Eastern Conference</div>
-                        ${eastHTML || '<div style="color: #999; text-align: center; padding: 20px;">No games</div>'}
-                    </div>
-                </div>
-            `;
+            // Show conference games side by side (only if there are conference games)
+            if (westHTML || eastHTML) {
+                html += `
+                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                `;
+
+                if (westHTML) {
+                    html += `
+                        <div class="conference-games">
+                            <div class="conference-games-title">Western Conference</div>
+                            ${westHTML}
+                        </div>
+                    `;
+                }
+
+                if (eastHTML) {
+                    html += `
+                        <div class="conference-games">
+                            <div class="conference-games-title">Eastern Conference</div>
+                            ${eastHTML}
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            // If no games at all, show message
+            if (!finalsHTML && !westHTML && !eastHTML) {
+                html = '<div style="color: #999; text-align: center; padding: 20px;">No games scheduled</div>';
+            }
 
             container.innerHTML = html;
         }
@@ -2250,45 +2268,45 @@
         // Manual matchup-to-round mapping (source of truth)
         const MATCHUP_ROUNDS = {
             // Conference Finals (current active series)
-            'Knicks_Cavaliers': 'confFinals',
-            'Cavaliers_Knicks': 'confFinals',
-            'Thunder_Spurs': 'confFinals',
-            'Spurs_Thunder': 'confFinals',
+            'Knicks_vs_Cavaliers': 'confFinals',
+            'Cavaliers_vs_Knicks': 'confFinals',
+            'Thunder_vs_Spurs': 'confFinals',
+            'Spurs_vs_Thunder': 'confFinals',
 
             // Round 2 (completed)
-            'Thunder_Lakers': 'round2',
-            'Lakers_Thunder': 'round2',
-            'Spurs_Timberwolves': 'round2',
-            'Timberwolves_Spurs': 'round2',
-            'Cavaliers_Pistons': 'round2',
-            'Pistons_Cavaliers': 'round2',
-            'Knicks_76ers': 'round2',
-            '76ers_Knicks': 'round2',
+            'Thunder_vs_Lakers': 'round2',
+            'Lakers_vs_Thunder': 'round2',
+            'Spurs_vs_Timberwolves': 'round2',
+            'Timberwolves_vs_Spurs': 'round2',
+            'Cavaliers_vs_Pistons': 'round2',
+            'Pistons_vs_Cavaliers': 'round2',
+            'Knicks_vs_76ers': 'round2',
+            '76ers_vs_Knicks': 'round2',
 
             // Round 1 (completed)
-            'Thunder_Suns': 'round1',
-            'Suns_Thunder': 'round1',
-            'Lakers_Rockets': 'round1',
-            'Rockets_Lakers': 'round1',
-            'Timberwolves_Nuggets': 'round1',
-            'Nuggets_Timberwolves': 'round1',
-            'Spurs_Trail Blazers': 'round1',
-            'Trail Blazers_Spurs': 'round1',
-            'Pistons_Magic': 'round1',
-            'Magic_Pistons': 'round1',
-            'Cavaliers_Raptors': 'round1',
-            'Raptors_Cavaliers': 'round1',
-            'Knicks_Hawks': 'round1',
-            'Hawks_Knicks': 'round1',
-            '76ers_Celtics': 'round1',
-            'Celtics_76ers': 'round1'
+            'Thunder_vs_Suns': 'round1',
+            'Suns_vs_Thunder': 'round1',
+            'Lakers_vs_Rockets': 'round1',
+            'Rockets_vs_Lakers': 'round1',
+            'Timberwolves_vs_Nuggets': 'round1',
+            'Nuggets_vs_Timberwolves': 'round1',
+            'Spurs_vs_Trail Blazers': 'round1',
+            'Trail Blazers_vs_Spurs': 'round1',
+            'Pistons_vs_Magic': 'round1',
+            'Magic_vs_Pistons': 'round1',
+            'Cavaliers_vs_Raptors': 'round1',
+            'Raptors_vs_Cavaliers': 'round1',
+            'Knicks_vs_Hawks': 'round1',
+            'Hawks_vs_Knicks': 'round1',
+            '76ers_vs_Celtics': 'round1',
+            'Celtics_vs_76ers': 'round1'
         };
 
         // Determine playoff round from game description
         function determineRound(description, team1Short, team2Short) {
             // First check manual mapping
-            const matchupKey1 = `${team1Short}_${team2Short}`;
-            const matchupKey2 = `${team2Short}_${team1Short}`;
+            const matchupKey1 = `${team1Short}_vs_${team2Short}`;
+            const matchupKey2 = `${team2Short}_vs_${team1Short}`;
 
             if (MATCHUP_ROUNDS[matchupKey1]) {
                 console.log(`✅ Round detected from mapping: ${MATCHUP_ROUNDS[matchupKey1]} (${matchupKey1})`);
