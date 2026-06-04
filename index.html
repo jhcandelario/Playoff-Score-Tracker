@@ -1181,23 +1181,25 @@
 
                 <!-- FINALS -->
                 <div class="finals-section">
-                    <div class="round-header">NBA Finals</div>
                     <div class="finals-label">NBA<br>FINALS</div>
                     <div class="finals-logo-container">
                         <img src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="NBA">
                     </div>
-                    <div class="matchup" style="margin-bottom: 15px; border: 2px solid #fdb927; box-shadow: 0 0 20px rgba(253, 185, 39, 0.4);">
-                        <div class="team-row">
-                            <span class="team-seed">W2</span>
-                            <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
-                            <span class="team-name">Spurs</span>
-                            <span class="team-wins">0</span>
-                        </div>
-                        <div class="team-row">
-                            <span class="team-seed">E3</span>
-                            <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
-                            <span class="team-name">Knicks</span>
-                            <span class="team-wins">0</span>
+                    <div class="round">
+                        <div class="round-header">NBA Finals</div>
+                        <div class="matchup" style="margin-bottom: 15px; border: 2px solid #fdb927; box-shadow: 0 0 20px rgba(253, 185, 39, 0.4);">
+                            <div class="team-row">
+                                <span class="team-seed">W2</span>
+                                <img src="https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg" class="team-logo-bracket">
+                                <span class="team-name">Spurs</span>
+                                <span class="team-wins">0</span>
+                            </div>
+                            <div class="team-row">
+                                <span class="team-seed">E3</span>
+                                <img src="https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg" class="team-logo-bracket">
+                                <span class="team-name">Knicks</span>
+                                <span class="team-wins">0</span>
+                            </div>
                         </div>
                     </div>
                     <div class="trophy-container">
@@ -1332,8 +1334,6 @@
             <div class="panel-title">
                 Player Teams & Scoring
                 <span class="auto-update-badge" style="margin-left: 15px; font-size: 0.5em;">AUTO-SYNC</span>
-                <button class="recalculate-btn" onclick="syncPlayerScoresWithBracket()" style="margin-left: 15px; font-size: 0.55em;">🔄 Sync with Bracket</button>
-                <button class="recalculate-btn" onclick="debugCurrentStandings()" style="margin-left: 10px; font-size: 0.55em; background: #1d428a;">📊 Check Live Standings</button>
             </div>
             <div class="player-cards-grid" id="team-details"></div>
         </div>
@@ -1660,16 +1660,7 @@
                 `;
             }).join('');
 
-            const champions = [];
-            players.forEach(player => {
-                data.players[player].teams.forEach(team => {
-                    if (team.champion) {
-                        champions.push(team.name);
-                    }
-                });
-            });
-            document.getElementById('champion-display').textContent =
-                champions.length > 0 ? champions[0] : 'TBD';
+            // Champion display removed - winner shown in Finals matchup with winner class
         }
 
         // Team name mapping for API
@@ -2277,7 +2268,11 @@
 
         // Manual matchup-to-round mapping (source of truth)
         const MATCHUP_ROUNDS = {
-            // Conference Finals (current active series)
+            // NBA Finals (current active series)
+            'Knicks_vs_Spurs': 'finals',
+            'Spurs_vs_Knicks': 'finals',
+
+            // Conference Finals (completed)
             'Knicks_vs_Cavaliers': 'confFinals',
             'Cavaliers_vs_Knicks': 'confFinals',
             'Thunder_vs_Spurs': 'confFinals',
